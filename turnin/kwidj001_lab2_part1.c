@@ -17,42 +17,16 @@ int main(void) {
 	DDRB = 0xFF; PORTB = 0x00; // Configure port B's 8 pins as outputs, initialize to 0s
 	unsigned char tmpB = 0x00; // Temporary variable to hold the value of B
 	unsigned char tmpA = 0x00; // Temporary variable to hold the value of A
-    unsigned char cntavail = 0x00;
-    PORTC = cntavail;
     while(1) {
             // 1) Read input
             tmpA = PINA & 0x01;
             // 2) Perform computation
             // if PA0 is 1, set PB1PB0 = 01, else = 10
-            switch(tmpA){
-                case 0x00: //000
-                    cntavail = 0x03;
-                    break;
-                case 0x01: //001
-                    cntavail = 0x02;
-                    break;
-                case 0x02: //010
-                    cntavail = 0x02;
-                    break;
-                case 0x03: //011
-                    cntavail = 0x01;
-                    break;
-                case 0x04: //100
-                    cntavail = 0x02;
-                    break;
-                case 0x05: //101
-                    cntavail = 0x01;
-                    break;
-                case 0x06: //110
-                    cntavail = 0x01;
-                    break;
-                case 0x07: //111
-                    cntavail = 0x00;
-                    break;
+            if (tmpA == 0x01) { // True if PA0 is 1
+                tmpB = 0x01; //if only PA0 = 1 then PB0 = 1
             }
-        
         // 3) Write output
-    PORTC = cntavail;	
+    PORTB = tmpB;	
         }
 	return 0;
 }

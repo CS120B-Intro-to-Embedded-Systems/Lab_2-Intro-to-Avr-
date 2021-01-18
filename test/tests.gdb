@@ -40,7 +40,7 @@ checkResult
 
 # Add tests below
 
-#Ex 1:
+#Exercise #1:
 test “PINA[1:0]: 00, PORTB0: 0”
 setPINA 0x00
 continue 2
