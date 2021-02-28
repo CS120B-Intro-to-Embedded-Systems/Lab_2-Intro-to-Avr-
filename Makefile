@@ -1,3 +1,4 @@
+
 # University of California, Riverside
 # CS120B Makefile
 MMCU=atmega1284
@@ -15,7 +16,7 @@ OBJS=$(patsubst $(PATHS)%,$(PATHO)%,$(SOURCES:.c=.o))
 
 CLEAN=rm -rf
 # Simulator
-SIMAVRDIR=/usr/local/Cellar/simavr/HEAD-0e03bc6/
+SIMAVRDIR=/usr/csshare/pkgs/simavr/
 SIMAVR=simavr
 
 # Compiler
@@ -23,13 +24,13 @@ AVR=avr-gcc
 DEBUGFLAGS=-g -O0
 SIMFLAGS=-D_SIMULATE_
 # Place the section past the end of reachable memory
-MMCUSECTION=-Wl,--undefined=_mmcu,--section-start=.mmcu=910000 
+MMCUSECTION=-Wl,--undefined=_mmcu,--section-start=.mmcu=910000
 FLAGS=-Wall -mmcu=$(MMCU) $(MMCUSECTION)
 INCLUDES=-I./$(PATHH) -I$(SIMAVRDIR)
 OBJCOPY=avr-objcopy
 OBJFLAGS=-j .text -j .data -O ihex
 # Debugger
-GDB=/usr/local/Cellar/gdb-9.2/gdb-9.2/gdb
+GDB=/usr/csshare/pkgs/avr-gdb-9.2-with-python/gdb/gdb
 # GDB Testing
 WHILELINENO=$$(grep -n -m 1 "while\s*(1)" source/main.c | cut -f1 -d:)
 GDBCOMMANDS=$(PATHT)commands.gdb
@@ -48,7 +49,7 @@ PROGRAM=avrdude
 PROGRAMMER=atmelice_isp
 MEMORY=flash
 #mem:op:file where op is (w)rite, (r)ead, (v)erify; performed in the order specified
-VERBOSITY=#-v -v ... etc. to have more verbose output. Normal output is usually enough unless something goes wrong. 
+VERBOSITY=#-v -v ... etc. to have more verbose output. Normal output is usually enough unless something goes wrong.
 ADDVERBOSITY=$(info Add additional -v to the \"avrdude -c ...\" command above for more details on the error)
 HIGH=hfuse
 HDEFAULT=0x99
@@ -64,33 +65,33 @@ RAW=m
 .PHONY: defaultFuses verifyFuses fuses disableJTAG clean test program debug pytest pydebug
 all: $(PATHB)main.hex
 
-verifyFuses: 
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):r:-:$(HEX) -U $(LOW):r:-:$(HEX) #|| $(ADDVERBOSITY)
+verifyFuses:
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):r:-:$(HEX) -U $(LOW):r:-:$(HEX)
 
-defaultFuses: 
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(HDEFAULT):$(RAW) -U $(LOW):w:$(LDEFAULT):$(RAW) #|| $(ADDVERBOSITY)
+defaultFuses:
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(HDEFAULT):$(RAW) -U $(LOW):w:$(LDEFAULT):$(RAW)
 
-fuses: 
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(H120):$(RAW) -U $(LOW):w:$(L120):$(RAW) #|| $(ADDVERBOSITY)
+fuses:
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(H120):$(RAW) -U $(LOW):w:$(L120):$(RAW)
 
 # Disable just the JTAG fuse
-disableJTAG: 
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):r:$(HTXT):$(HEX) #|| $(ADDVERBOSITY)
+disableJTAG:
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):r:$(HTXT):$(HEX)
 	@read -n 4 c < $(HTXT);echo -n "0x" > $(HTXT);echo "obase=16; $$(($$c | $(JTAGEN)))" | bc >> $(HTXT)
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(HTXT):$(HEX) 
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(HIGH):w:$(HTXT):$(HEX)
 	@rm -f $(HTXT)
 
 program: $(PATHB)main.hex
-	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(MEMORY):w:$< #|| $(ADDVERBOSITY)
+	$(PROGRAM) -c $(PROGRAMMER) -p $(MMCU) $(VERBOSITY) -U $(MEMORY):w:$<
 
 debug: $(PATHO)main.elf
-	@sed -i "s/break main.c:.*/break main.c:$(WHILELINENO)/" $(INITGDBDEBUGGER)
+	@sed -i "s/break main.c:.*/break main.c:$(WHILELINENO)/" $(INITDEBUGGER)
 	$(SIMAVR) -g -mmcu=$(MMCU) -f $(FREQ) $< &
 	-$(GDB) $(GDBDEBUGGING)
 	@pkill simavr
 
 test: $(PATHO)main.elf
-	@sed -i ".bak" "s/break main.c:.*/break main.c:$(WHILELINENO)/" $(INITGDBDEBUGGER)
+	@sed -i "s/break main.c:.*/break main.c:$(WHILELINENO)/" $(INITDEBUGGER)
 	$(SIMAVR) -g -mmcu=$(MMCU) -f $(FREQ) $< &
 	-$(GDB) $(GDBTESTING)
 	@pkill simavr
